@@ -238,7 +238,12 @@ class EcsServiceManager:
         raise StandardError("Unknown problem describing service %s." % service_name)
 
     def is_matching_service(self, expected, existing):
-        if expected['task_definition'] != existing['taskDefinition']:
+        # existing will be prefixed, like arn:aws:ecs:us-east-1:000000000000:task-definition/
+        try:
+            _, existing_task_definition = existing['taskDefinition'].split('/', 1)
+        except (AttributeError, ValueError):
+            existing_task_definition = existing['taskDefinition']
+        if expected['task_definition'] != existing_task_definition:
             return False
 
         if (expected['load_balancers'] or []) != existing['loadBalancers']:
